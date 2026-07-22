@@ -14,7 +14,7 @@ movimento per zona restricted solo se la successiva puo essere liberata in tempo
 coefficiente di priorita, scegliere a pari mosse quello con priorita piu altra
 
 algoritmo
-dijkstra per il piu efficiente
+dijkstra per il piu efficiente, dividere per la capienza per avere un valore effettivo per drone
 opzioni: 
 capienza resta uguale o diminuisce nel tempo: solo dijkstra e altri percorsi indipendenti
 
