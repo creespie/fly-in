@@ -1,0 +1,56 @@
+from map_creator import Node
+from path import faster_path
+
+class Drone:
+    drones = []
+
+    def __init__(self, name: str):
+        self.name = name
+        self.path = []
+        Drone.drones = self
+
+def drone_creator(number: int):
+    for i in range(1, number + 1):
+        Drone(f"D{i}")
+
+def remove_all_capacity(path: list[str]):
+    if "travelling to " in path[0]:
+        Node.nodes["start_hub"].slim_connection(Node.nodes[path[1]])
+    else:
+        Node.nodes["start_hub"].slim_connection(Node.nodes[path[0]])
+    for i in range(1, len(path)):
+        if "travelling to " in path[i]:
+            continue
+        Node.nodes[path[i]].remove_space()
+        if "travelling to " in path[i + 1]:
+            Node.nodes[path[i]].slim_connection(Node.nodes[path[i + 2]])
+        else:
+            Node.nodes[path[i]].slim_connection(Node.nodes[path[i + 1]])
+    if "travelling to " not in path[len(path) - 1]:
+        Node.nodes[path[len(path) - 1]].remove_space()
+        Node.nodes[path[len(path) - 1]].slim_connection(Node.nodes["goal"])
+
+def filler(starting_node: Node):
+    damount = len(Drone.drones)
+    paths = []
+    index = 0
+    current_drone = Drone.drones[index]
+    starting_node = Node.nodes["start_hub"]
+    path = None
+    if path is None:
+        path = faster_path(starting_node)
+        if path is not None:
+            remove_all_capacity(path[1])
+            paths.append(path)
+            current_drone.path = path[1]
+            damount -= 1
+            index += 1
+            current_drone = Drone.drones[index]
+    if path is None:
+        return None
+    while damount > 0:
+        new_path = faster_path(starting_node)
+        while(new_path[0] == path[0] and new_path):
+            
+            
+            

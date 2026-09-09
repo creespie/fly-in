@@ -22,12 +22,30 @@ class Node:
         self.contacts = {}
         Node.nodes[self.name] = self
 
+    def remove_space(self):
+        try:
+            self.cap -= 1
+            if self.cap < 0:
+                raise ValueError(f"{self.name} went negative")
+        except ValueError as e:
+            print(e)
+
+    def slim_connection(self, node: Node):
+        try:
+            self.contacts[node.name][1] -= 1
+            node.contacts[self.name][1] -= 1
+            if self.contacts[node.name][1] < 0 or node.contacts[self.name][1] < 0:
+                raise ValueError(f"Connection between {self.name} and {node.name} went negative")
+        except ValueError as e:
+            print(e)
+        
+
 def add_contact(node1: Node, node2: Node, max: int = 1):
     if (node1.name in node2.contacts) or (node2.name in node1.contacts):
         return
     else:
-        node1.contacts[node2.name] = (node2, max)
-        node2.contacts[node1.name] = (node1, max)
+        node1.contacts[node2.name] = [node2, max]
+        node2.contacts[node1.name] = [node1, max]
 
 
 def zone_parser(input_str: str):

@@ -2,29 +2,29 @@ from map_creator import Node, ZoneType
 import math
 
 def faster_path(starting_node: Node):
-    if starting_node.name is not "start_hub":
+    if starting_node.name != "start_hub":
         raise ReferenceError("start_hub not provided correctly")
     fail = False
-    visited = []
-    unvisited = [node for node in starting_node.nodes]
-    unvisited.remove("start_hub")
+    visited = set()
+    unvisited = {node for node in starting_node.nodes.values()}
+    unvisited.remove(starting_node)
     nodes_map = {node:[math.inf, None, False] for node in starting_node.nodes}
     nodes_map["start_hub"] = [0, None, False]
     chosen_node = starting_node
     while chosen_node.name != "goal":
         next_node = None
-        visited.append(chosen_node.name)
-        if chosen_node.name in unvisited:
-            unvisited.remove(chosen_node.name)
+        visited.add(chosen_node)
+        if chosen_node in unvisited:
+            unvisited.remove(chosen_node)
         cost_up_to_here = nodes_map[chosen_node.name][0]    
         for contact in chosen_node.contacts:
             contact_node, max_through = chosen_node.contacts[contact]
-            if max_through == 0 or contact_node.name in visited:
+            if max_through == 0 or contact_node in visited:
                 continue
             if contact_node.cap == 0:
-                if contact_node.name in unvisited:
-                    unvisited.remove(contact_node.name)
-                visited.append(contact_node.name)
+                if contact_node in unvisited:
+                    unvisited.remove(contact_node)
+                visited.add(contact_node)
                 nodes_map[contact_node.name] = [-1, None, False]
                 continue
             if contact_node.zone == ZoneType.PRIORITY:
@@ -43,7 +43,7 @@ def faster_path(starting_node: Node):
             elif nodes_map[nodes.name][0] < nodes_map[next_node.name][0] or (
                 (nodes_map[nodes.name][0] == nodes_map[next_node.name][0]) and nodes_map[nodes.name][2]):
              next_node = nodes
-        
+
         if next_node is not None:
             chosen_node = next_node
         else:
@@ -56,7 +56,7 @@ def faster_path(starting_node: Node):
     while prev_node.name != "start_hub":
         path.append(prev_node.name)
         if prev_node.zone == ZoneType.RESTRICTED:
-            path.append("travelling to" + prev_node.name)
+            path.append("travelling to " + prev_node.name)
         prev_node = nodes_map[prev_node.name][1]
     path.reverse()
     return (len(path), path)
