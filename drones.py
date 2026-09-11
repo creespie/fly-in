@@ -21,17 +21,21 @@ def remove_all_capacity(path: list[str]):
         Node.nodes["start_hub"].slim_connection(Node.nodes[path[1]])
     else:
         Node.nodes["start_hub"].slim_connection(Node.nodes[path[0]])
+        Node.nodes[path[0]].remove_space()
+        if len(path) > 2:
+            if "travelling to " in path[1]:
+                Node.nodes[path[0]].slim_connection(Node.nodes[path[2]])
+            else:
+                Node.nodes[path[0]].slim_connection(Node.nodes[path[1]])
     for i in range(1, len(path)):
         if "travelling to " in path[i]:
             continue
         Node.nodes[path[i]].remove_space()
-        if "travelling to " in path[i + 1]:
-            Node.nodes[path[i]].slim_connection(Node.nodes[path[i + 2]])
-        else:
-            Node.nodes[path[i]].slim_connection(Node.nodes[path[i + 1]])
-    if "travelling to " not in path[len(path) - 1]:
-        Node.nodes[path[len(path) - 1]].remove_space()
-        Node.nodes[path[len(path) - 1]].slim_connection(Node.nodes["goal"])
+        if i < len(path) - 1:
+            if "travelling to " in path[i + 1]:
+                Node.nodes[path[i]].slim_connection(Node.nodes[path[i + 2]])
+            else:
+                Node.nodes[path[i]].slim_connection(Node.nodes[path[i + 1]])
 
 def filler(starting_node: Node):
     damount = len(Drone.drones)
@@ -60,6 +64,8 @@ def filler(starting_node: Node):
         if new_path:  #if there is a next biger path go over all stored paths to reassign for turns between new path and old path
             for i in range(1, new_path[0] - path[0] + 1):
                 damount, index = assign_all(paths, damount, index, i)
+            if index < len(Drone.drones):
+                current_drone = Drone.drones[index]
         if new_path is not None and damount > 0:
             path = new_path
             damount, index = confirm_path(path, current_drone, damount, index, paths)
