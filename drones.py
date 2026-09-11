@@ -9,6 +9,7 @@ class Drone:
         self.name = name
         self.path = []
         self.arrived = False
+        self.assigned = False
         Drone.drones.append(self)
 
 def drone_creator(number: int):
@@ -70,16 +71,16 @@ def filler(starting_node: Node):
         for i in range(1, math.ceil(damount / len(paths)) + 1):
             damount, index = assign_all(paths, damount, index, i)
 
-def confirm_path(path: tuple[int, list[str]], current_drone: Drone, damount: int, index: int, paths: list[list[tuple[int, list[str]]]]):
+def confirm_path(path: tuple[int, list[str]], current_drone: Drone, damount: int, index: int, paths: list[tuple[int, list[str]]]):
     paths.append(path)
     remove_all_capacity(path[1])
     current_drone.path.extend(path[1])
-    current_drone.arrived = True
+    current_drone.assigned = True
     damount -= 1
     index += 1
     return damount, index
             
-def assign_all(paths: list[tuple[int, list[str]]], damount, index, wait_number):
+def assign_all(paths: list[tuple[int, list[str]]], damount: int, index: int, wait_number: int):
     ref_number = paths[len(paths) - 1][0]
     for path in paths:
         if damount == 0:
@@ -91,6 +92,32 @@ def assign_all(paths: list[tuple[int, list[str]]], damount, index, wait_number):
             for _ in range(0, ref_number - path[0] + wait_number): # add waiting turns
                 current_drone.path.append("wait")
             current_drone.path.extend(path[1])
-            current_drone.arrived = True
+            current_drone.assigned = True
             damount -= 1
     return damount, index
+
+def print_all(drones: list[Drone]):
+    finished = False
+    turn = 0
+    while not finished:
+        finished = True
+        for drone in drones:
+            if drone.arrived:
+                continue
+            else:
+                finished = False
+            if drone.path[turn] == "goal":
+                print(f"{drone.name}-goal", end=' ')
+                drone.arrived = True
+            else:
+                if drone.path[turn] == "wait":
+                    continue
+                elif "travelling to " in drone.path[turn]:
+                    if turn == 0 or drone.path[turn - 1] == "wait":
+                        print(f"{drone.name}-start_hub-{drone.path[turn + 1]}", end=' ')
+                    else:
+                        print(f"{drone.name}-{drone.path[turn - 1]}-{drone.path[turn + 1]}", end=' ')
+                else:
+                    print(f"{drone.name}-{drone.path[turn]}", end=' ')
+        turn += 1
+        print()
