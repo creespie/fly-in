@@ -127,3 +127,56 @@ def print_all(drones: list[Drone]):
                     print(f"{drone.name}-{drone.path[turn]}", end=' ')
         turn += 1
         print()
+
+
+def generate_lines(drones: list[Drone]) -> list[str]:
+    """Ritorna le righe di output della simulazione come lista.
+
+    Non modifica lo stato dei droni (a differenza di ``print_all``),
+    così puoi chiamare questa funzione e poi decidere se stampare
+    a terminale o passare a un visualizzatore grafico.
+    """
+    lines: list[str] = []
+    arrived = {d.name: False for d in drones}
+    turn = 0
+    max_turns = 100_000  # salvagente contro loop infiniti
+
+    while True:
+        finished = True
+        parts: list[str] = []
+
+        for drone in drones:
+            if arrived[drone.name]:
+                continue
+            finished = False
+
+            if turn >= len(drone.path):
+                # Path esaurito senza aver raggiunto il goal: anomalia
+                continue
+
+            step = drone.path[turn]
+
+            if step == "goal":
+                parts.append(f"{drone.name}-goal")
+                arrived[drone.name] = True
+            elif step == "wait":
+                continue
+            elif "travelling to " in step:
+                if turn == 0 or drone.path[turn - 1] == "wait":
+                    parts.append(
+                        f"{drone.name}-start_hub-{drone.path[turn + 1]}"
+                    )
+                else:
+                    parts.append(
+                        f"{drone.name}-{drone.path[turn - 1]}-"
+                        f"{drone.path[turn + 1]}"
+                    )
+            else:
+                parts.append(f"{drone.name}-{step}")
+
+        lines.append(" ".join(parts))
+        turn += 1
+        if finished or turn > max_turns:
+            break
+
+    return lines
