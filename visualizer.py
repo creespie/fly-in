@@ -1,4 +1,3 @@
-"""Visualizzatore Pygame con animazione fluida per Fly-in."""
 
 from __future__ import annotations
 
@@ -14,7 +13,7 @@ from map_creator import Node, ZoneType
 
 @dataclass
 class DroneSnapshot:
-    """Posizione di un drone in un turno di simulazione."""
+    """Position of a drone in a simulation turn"""
 
     drone_id: int
     kind: Literal["zone", "connection"]
@@ -28,15 +27,15 @@ def parse_output_lines(
     start_hub: str,
     nb_drones: int,
 ) -> list[dict[int, DroneSnapshot]]:
-    """Converte le righe di output in snapshot per turno.
+    """Converts output lines in snapshots for each turn.
 
     Args:
-        lines: righe prodotte da ``drones.generate_lines``.
-        start_hub: nome interno dello start hub (default ``"start_hub"``).
-        nb_drones: numero totale di droni.
+        lines: output lines from ''drones.generate_lines''.
+        start_hub: name of start_hub (default ''"start_hub"'').
+        nb_drones: total number of drones
 
     Returns:
-        Lista di dict ``{drone_id: DroneSnapshot}``, uno per turno.
+        list of dicts ''{drone_id: DroneSnapshot}'', one each turn.
     """
     drawn: dict[int, DroneSnapshot] = {
         i: DroneSnapshot(drone_id=i, kind="zone", zone=start_hub)
@@ -101,11 +100,11 @@ COLOR_MAP: dict[str, tuple[int, int, int]] = {
 
 
 class PygameVisualizer:
-    """Visualizzatore grafico con animazione fluida."""
+    """Graphic visualizer with animation"""
 
     NODE_RADIUS: int = 26
     DRONE_RADIUS: int = 9
-    MIN_NODE_DISTANCE: int = 60  # pixel minimi tra i centri dei nodi
+    MIN_NODE_DISTANCE: int = 60
 
     def __init__(
         self,
@@ -131,10 +130,10 @@ class PygameVisualizer:
         self._drone_colors: dict[int, tuple[int, int, int]] = {}
 
     def _compute_positions(self, nodes: dict[str, Node]) -> None:
-        """Calcola le posizioni pixel dei nodi.
+        """Calculating nodes pixel position.
 
-        Usa scaling indipendente sugli assi per massimizzare la distanza,
-        poi applica un pass di push-apart per evitare sovrapposizioni.
+        Uses independent scaling on the axis to maximize the distance,
+        then applies a push-apart's pass to avoid overlappings
         """
         if not nodes:
             self.positions = {}
@@ -149,14 +148,12 @@ class PygameVisualizer:
         usable_w = self.width - 2 * self.margin
         usable_h = self.height - 2 * self.margin
 
-        # Layout iniziale: scaling indipendente per asse
         layout: dict[str, list[float]] = {}
         for name, node in nodes.items():
             px = self.margin + (node.coords[0] - min_x) / span_x * usable_w
             py = self.margin + (node.coords[1] - min_y) / span_y * usable_h
             layout[name] = [px, py]
 
-        # Push-apart iterativo: nessun nodo più vicino di MIN_NODE_DISTANCE
         names = list(layout.keys())
         min_d = float(self.MIN_NODE_DISTANCE)
         for _ in range(80):
@@ -221,7 +218,6 @@ class PygameVisualizer:
         return COLOR_MAP.get(key, (170, 170, 170))
 
     def draw_network(self) -> None:
-        # Connessioni
         for a, b in self._connections:
             p1 = self.positions.get(a)
             p2 = self.positions.get(b)
@@ -352,12 +348,12 @@ class PygameVisualizer:
         nodes: dict[str, Node],
         turn_delay_ms: int = 600,
     ) -> None:
-        """Replay animato della simulazione.
+        """Animated replay of the simulation.
 
         Args:
-            turns: snapshot per turno.
-            nodes: mappa dei nodi (``Node.nodes``).
-            turn_delay_ms: millisecondi tra un turno e il successivo.
+            turns: snapshot for turn.
+            nodes: maps of nodes (``Node.nodes``).
+            turn_delay_ms: milliseconds between one turn and the next one.
         """
         if not turns:
             return
