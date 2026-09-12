@@ -1,6 +1,7 @@
 from enum import Enum
 import sys
 
+
 class ZoneType(Enum):
     NORMAL = "normal"
     BLOCKED = "blocked"
@@ -11,7 +12,15 @@ class ZoneType(Enum):
 class Node:
     nodes = {}
 
-    def __init__(self, name: str, x: int, y: int, zone:ZoneType = ZoneType.NORMAL, color: str ="white", max_drones: int =1):
+    def __init__(
+        self,
+        name: str,
+        x: int,
+        y: int,
+        zone: ZoneType = ZoneType.NORMAL,
+        color: str = "white",
+        max_drones: int = 1,
+    ):
         self.name: str = name
         self.coords: tuple[int, int] = (x, y)
         self.zone: ZoneType = zone
@@ -35,11 +44,15 @@ class Node:
         try:
             self.contacts[node.name][1] -= 1
             node.contacts[self.name][1] -= 1
-            if self.contacts[node.name][1] < 0 or node.contacts[self.name][1] < 0:
-                raise ValueError(f"Connection between {self.name} and {node.name} went negative")
+            if self.contacts[node.name][1] < 0 or node.contacts[
+                    self.name][1] < 0:
+                raise ValueError(
+                    f"Connection between {self.name} and {node.name} "
+                    "went negative"
+                )
         except ValueError as e:
             print(e)
-        
+
 
 def add_contact(node1: Node, node2: Node, max: int = 1):
     if (node1.name in node2.contacts) or (node2.name in node1.contacts):
@@ -62,7 +75,7 @@ def zone_parser(input_str: str):
             raise ValueError("Not Closed bracket")
         try:
             d = dict(item.split("=", 1) for item in meta[1][:-1].split())
-        except:
+        except Exception:
             raise ValueError("Wrong metadata format")
         for key in d.keys():
             if key not in ("zone", "color", "max_drones"):
@@ -82,32 +95,27 @@ def zone_parser(input_str: str):
     if (len(general_info) != 4) or "-" in general_info[1]:
         raise ValueError("Spaces and dashes are not accepted")
     try:
-        x = int(general_info[2])
-        y = int(general_info[3])
+        int(general_info[2])
+        int(general_info[3])
     except ValueError:
         raise ValueError("Coordinates must be ints")
     return Node(
-        general_info[1],
-        int(general_info[2]),
-        int(general_info[3]),
-        **kwargs
-    )
+        general_info[1], int(general_info[2]), int(general_info[3]), **kwargs)
+
 
 def start_end(input_str: str, drones: int, start: bool):
     meta = input_str.lstrip().split("[")
     general_info = meta[0].split()
 
-    kwargs = {
-        "zone": ZoneType.NORMAL,
-        "max_drones": drones
-    }
+    kwargs = {"zone": ZoneType.NORMAL, "max_drones": drones}
 
     if len(meta) == 2:
         if meta[1][-1] != "]":
             raise ValueError("Not Closed bracket")
         try:
-            datadict = dict(item.split("=", 1) for item in meta[1][:-1].split())
-        except:
+            datadict = dict(
+                item.split("=", 1) for item in meta[1][:-1].split())
+        except Exception:
             raise ValueError("Wrong metadata format")
         for key in datadict.keys():
             if key not in ("color", "max_drones"):
@@ -118,16 +126,17 @@ def start_end(input_str: str, drones: int, start: bool):
     if (len(general_info) != 4) or "-" in general_info[1]:
         raise ValueError("Spaces and dashes are not accepted")
     try:
-        x = int(general_info[2])
-        y = int(general_info[3])
+        int(general_info[2])
+        int(general_info[3])
     except ValueError:
         raise ValueError("Coordinates must be ints")
     return Node(
         "start_hub" if start else "goal",
         int(general_info[2]),
         int(general_info[3]),
-        **kwargs
+        **kwargs,
     )
+
 
 def connection_parser(input_str: str, node_names: dict[str, str]) -> None:
     meta = input_str.lstrip().split("[")
@@ -165,13 +174,15 @@ def load_map(filepath: str) -> tuple[Node, int]:
                 if stripped.startswith("nb_drones:"):
                     nb_drones = int(stripped.split(":", 1)[1].strip())
                     if nb_drones <= 0:
-                        raise ValueError("Number of drones can't be 0 or negative")
+                        raise ValueError(
+                            "Number of drones can't be 0 or negative")
                 elif not nb_drones:
                     raise ValueError("Files doesnt begin with nb_drones")
                 elif stripped.startswith("start_hub:"):
                     file_name = stripped.split("[")[0].split()[1]
                     if "start_hub" in node_names.values():
-                        raise ValueError("Start_hub was defined more than once")
+                        raise ValueError(
+                            "Start_hub was defined more than once")
                     node_names[file_name] = "start_hub"
                     start_node = start_end(stripped, nb_drones, start=True)
                 elif stripped.startswith("end_hub:"):

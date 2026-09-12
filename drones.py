@@ -2,6 +2,7 @@ from map_creator import Node
 from path import faster_path
 import math
 
+
 class Drone:
     drones = []
 
@@ -12,9 +13,11 @@ class Drone:
         self.assigned = False
         Drone.drones.append(self)
 
+
 def drone_creator(number: int):
     for i in range(1, number + 1):
         Drone(f"D{i}")
+
 
 def remove_all_capacity(path: list[str]):
     if "travelling to " in path[0]:
@@ -37,6 +40,7 @@ def remove_all_capacity(path: list[str]):
             else:
                 Node.nodes[path[i]].slim_connection(Node.nodes[path[i + 1]])
 
+
 def filler(starting_node: Node):
     damount = len(Drone.drones)
     paths = []
@@ -48,7 +52,8 @@ def filler(starting_node: Node):
     if path is None:
         path = faster_path(starting_node)
         if path is not None:
-            damount, index = confirm_path(path, current_drone, damount, index, paths)
+            damount, index = confirm_path(
+                path, current_drone, damount, index, paths)
             if index < len(Drone.drones):
                 current_drone = Drone.drones[index]
     if path is None:
@@ -57,18 +62,22 @@ def filler(starting_node: Node):
         new_path = faster_path(starting_node)
         while new_path is not None and new_path[0] == path[0]:
             path = new_path
-            damount, index = confirm_path(path, current_drone, damount, index, paths)
+            damount, index = confirm_path(
+                path, current_drone, damount, index, paths)
             if index < len(Drone.drones):
                 current_drone = Drone.drones[index]
             new_path = faster_path(starting_node)
-        if new_path:  #if there is a next biger path go over all stored paths to reassign for turns between new path and old path
+        if (
+            new_path
+        ):
             for i in range(1, new_path[0] - path[0] + 1):
                 damount, index = assign_all(paths, damount, index, i)
             if index < len(Drone.drones):
                 current_drone = Drone.drones[index]
         if new_path is not None and damount > 0:
             path = new_path
-            damount, index = confirm_path(path, current_drone, damount, index, paths)
+            damount, index = confirm_path(
+                path, current_drone, damount, index, paths)
             if index < len(Drone.drones):
                 current_drone = Drone.drones[index]
         else:
@@ -77,7 +86,14 @@ def filler(starting_node: Node):
         for i in range(1, math.ceil(damount / len(paths)) + 1):
             damount, index = assign_all(paths, damount, index, i)
 
-def confirm_path(path: tuple[int, list[str]], current_drone: Drone, damount: int, index: int, paths: list[tuple[int, list[str]]]):
+
+def confirm_path(
+    path: tuple[int, list[str]],
+    current_drone: Drone,
+    damount: int,
+    index: int,
+    paths: list[tuple[int, list[str]]],
+):
     paths.append(path)
     remove_all_capacity(path[1])
     current_drone.path.extend(path[1])
@@ -85,8 +101,12 @@ def confirm_path(path: tuple[int, list[str]], current_drone: Drone, damount: int
     damount -= 1
     index += 1
     return damount, index
-            
-def assign_all(paths: list[tuple[int, list[str]]], damount: int, index: int, wait_number: int):
+
+
+def assign_all(
+    paths: list[
+        tuple[int, list[str]]], damount: int, index: int, wait_number: int
+):
     ref_number = paths[len(paths) - 1][0]
     for path in paths:
         if damount == 0:
@@ -95,12 +115,13 @@ def assign_all(paths: list[tuple[int, list[str]]], damount: int, index: int, wai
             if index < len(Drone.drones):
                 current_drone = Drone.drones[index]
             index += 1
-            for _ in range(0, ref_number - path[0] + wait_number): # add waiting turns
+            for _ in range(0, ref_number - path[0] + wait_number):
                 current_drone.path.append("wait")
             current_drone.path.extend(path[1])
             current_drone.assigned = True
             damount -= 1
     return damount, index
+
 
 def print_all(drones: list[Drone]):
     finished = False
@@ -113,18 +134,23 @@ def print_all(drones: list[Drone]):
             else:
                 finished = False
             if drone.path[turn] == "goal":
-                print(f"{drone.name}-goal", end=' ')
+                print(f"{drone.name}-goal", end=" ")
                 drone.arrived = True
             else:
                 if drone.path[turn] == "wait":
                     continue
                 elif "travelling to " in drone.path[turn]:
                     if turn == 0 or drone.path[turn - 1] == "wait":
-                        print(f"{drone.name}-start_hub-{drone.path[turn + 1]}", end=' ')
+                        print(f"{drone.name}-start_hub-"
+                              f"{drone.path[turn + 1]}", end=" ")
                     else:
-                        print(f"{drone.name}-{drone.path[turn - 1]}-{drone.path[turn + 1]}", end=' ')
+                        print(
+                            f"{drone.name}-{drone.path[turn - 1]}-"
+                            f"{drone.path[turn + 1]}",
+                            end=" ",
+                        )
                 else:
-                    print(f"{drone.name}-{drone.path[turn]}", end=' ')
+                    print(f"{drone.name}-{drone.path[turn]}", end=" ")
         turn += 1
         print()
 
@@ -164,8 +190,7 @@ def generate_lines(drones: list[Drone]) -> list[str]:
             elif "travelling to " in step:
                 if turn == 0 or drone.path[turn - 1] == "wait":
                     parts.append(
-                        f"{drone.name}-start_hub-{drone.path[turn + 1]}"
-                    )
+                        f"{drone.name}-start_hub-{drone.path[turn + 1]}")
                 else:
                     parts.append(
                         f"{drone.name}-{drone.path[turn - 1]}-"

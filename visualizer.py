@@ -1,4 +1,5 @@
 """Visualizzatore Pygame con animazione fluida per Fly-in."""
+
 from __future__ import annotations
 
 import colorsys
@@ -11,10 +12,6 @@ import pygame
 from map_creator import Node, ZoneType
 
 
-# ---------------------------------------------------------------------------
-# Snapshot di un drone in un singolo turno
-# ---------------------------------------------------------------------------
-
 @dataclass
 class DroneSnapshot:
     """Posizione di un drone in un turno di simulazione."""
@@ -25,10 +22,6 @@ class DroneSnapshot:
     connection: Optional[tuple[str, str]] = None
     progress: float = 1.0
 
-
-# ---------------------------------------------------------------------------
-# Parser: righe di output -> turni di snapshot
-# ---------------------------------------------------------------------------
 
 def parse_output_lines(
     lines: list[str],
@@ -63,17 +56,15 @@ def parse_output_lines(
             if len(parts) == 2:
                 zone = parts[1]
                 drawn[did] = DroneSnapshot(
-                    drone_id=did, kind="zone", zone=zone
-                )
+                    drone_id=did, kind="zone", zone=zone)
                 if zone == "goal":
                     arrived.add(did)
             else:
                 a, b = parts[1], parts[2]
                 prev = drawn.get(did)
                 from_zone = (
-                    prev.zone
-                    if prev and prev.kind == "zone" and prev.zone
-                    else a
+                    prev.zone if prev and prev.kind ==
+                    "zone" and prev.zone else a
                 )
                 to_zone = b if from_zone == a else a
                 drawn[did] = DroneSnapshot(
@@ -92,10 +83,6 @@ def parse_output_lines(
     return turns
 
 
-# ---------------------------------------------------------------------------
-# Colori
-# ---------------------------------------------------------------------------
-
 COLOR_MAP: dict[str, tuple[int, int, int]] = {
     "red": (220, 60, 60),
     "green": (60, 180, 75),
@@ -112,10 +99,6 @@ COLOR_MAP: dict[str, tuple[int, int, int]] = {
     "pink": (240, 130, 180),
 }
 
-
-# ---------------------------------------------------------------------------
-# Visualizer
-# ---------------------------------------------------------------------------
 
 class PygameVisualizer:
     """Visualizzatore grafico con animazione fluida."""
@@ -137,8 +120,7 @@ class PygameVisualizer:
         self.font: pygame.font.Font = pygame.font.SysFont("Arial", 15)
         self.font_small: pygame.font.Font = pygame.font.SysFont("Arial", 12)
         self.font_bold: pygame.font.Font = pygame.font.SysFont(
-            "Arial", 17, bold=True
-        )
+            "Arial", 17, bold=True)
         self.width: int = width
         self.height: int = height
         self.margin: int = margin
@@ -147,10 +129,6 @@ class PygameVisualizer:
         self._nodes: dict[str, Node] = {}
         self._connections: list[tuple[str, str]] = []
         self._drone_colors: dict[int, tuple[int, int, int]] = {}
-
-    # ------------------------------------------------------------------
-    # Layout
-    # ------------------------------------------------------------------
 
     def _compute_positions(self, nodes: dict[str, Node]) -> None:
         """Calcola le posizioni pixel dei nodi.
@@ -191,7 +169,6 @@ class PygameVisualizer:
                     dy = p2[1] - p1[1]
                     d = math.hypot(dx, dy)
                     if d < 1e-3:
-                        # Sovrapposti: separa lungo una direzione fissa
                         dx, dy, d = 1.0, 0.0, 1.0
                     if d < min_d:
                         push = (min_d - d) / 2.0
@@ -204,15 +181,13 @@ class PygameVisualizer:
             if not moved:
                 break
 
-        # Clamp dentro la finestra (rispettando il margine)
         r = self.NODE_RADIUS + 30
         for p in layout.values():
             p[0] = max(r, min(self.width - r, p[0]))
             p[1] = max(r, min(self.height - r, p[1]))
 
         self.positions = {
-            name: (int(p[0]), int(p[1])) for name, p in layout.items()
-        }
+            name: (int(p[0]), int(p[1])) for name, p in layout.items()}
 
     def _collect_connections(self, nodes: dict[str, Node]) -> None:
         seen: set[frozenset[str]] = set()
@@ -225,24 +200,15 @@ class PygameVisualizer:
                 seen.add(key)
                 self._connections.append((node.name, other_name))
 
-    # ------------------------------------------------------------------
-    # Colori per drone
-    # ------------------------------------------------------------------
-
     def _drone_color(self, did: int) -> tuple[int, int, int]:
         cached = self._drone_colors.get(did)
         if cached is not None:
             return cached
-        # Distribuzione aurea sull'hue per colori distinti
         h = (did * 0.618033988749895) % 1.0
         r, g, b = colorsys.hsv_to_rgb(h, 0.62, 0.98)
         color = (int(r * 255), int(g * 255), int(b * 255))
         self._drone_colors[did] = color
         return color
-
-    # ------------------------------------------------------------------
-    # Disegno rete
-    # ------------------------------------------------------------------
 
     def _zone_color(self, node: Node) -> tuple[int, int, int]:
         if node.zone == ZoneType.BLOCKED:
@@ -263,14 +229,12 @@ class PygameVisualizer:
                 continue
             pygame.draw.line(self.screen, (175, 175, 175), p1, p2, 4)
 
-        # Nodi
         for name, node in self._nodes.items():
             pos = self.positions.get(name)
             if pos is None:
                 continue
             color = self._zone_color(node)
 
-            # Alone esterno per zone speciali
             if node.zone == ZoneType.PRIORITY:
                 pygame.draw.circle(
                     self.screen, (255, 220, 90), pos, self.NODE_RADIUS + 6
@@ -282,14 +246,11 @@ class PygameVisualizer:
 
             pygame.draw.circle(self.screen, color, pos, self.NODE_RADIUS)
             pygame.draw.circle(
-                self.screen, (0, 0, 0), pos, self.NODE_RADIUS, 3
-            )
+                self.screen, (0, 0, 0), pos, self.NODE_RADIUS, 3)
 
-            # Etichetta nome
             label = self.font.render(name, True, (20, 20, 20))
             label_rect = label.get_rect(
-                center=(pos[0], pos[1] + self.NODE_RADIUS + 14)
-            )
+                center=(pos[0], pos[1] + self.NODE_RADIUS + 14))
             bg = pygame.Surface(
                 (label_rect.width + 8, label_rect.height + 4),
                 pygame.SRCALPHA,
@@ -298,7 +259,6 @@ class PygameVisualizer:
             self.screen.blit(bg, (label_rect.x - 4, label_rect.y - 2))
             self.screen.blit(label, label_rect)
 
-            # Badge tipo
             badge_text = ""
             badge_color: tuple[int, int, int] = (0, 0, 0)
             if node.zone == ZoneType.RESTRICTED:
@@ -320,10 +280,6 @@ class PygameVisualizer:
                         pos[1] - badge.get_height() // 2,
                     ),
                 )
-
-    # ------------------------------------------------------------------
-    # Target per drone (calcolato per frame)
-    # ------------------------------------------------------------------
 
     def _grid_offset(self, idx: int, total: int) -> tuple[float, float]:
         if total <= 1:
@@ -367,9 +323,7 @@ class PygameVisualizer:
                 )
         return targets
 
-    def draw_drones(
-        self, positions: dict[int, tuple[float, float]]
-    ) -> None:
+    def draw_drones(self, positions: dict[int, tuple[float, float]]) -> None:
         for did in sorted(positions):
             x, y = positions[did]
             pos = (int(x), int(y))
@@ -382,8 +336,7 @@ class PygameVisualizer:
 
             pygame.draw.circle(self.screen, color, pos, self.DRONE_RADIUS)
             pygame.draw.circle(
-                self.screen, (0, 0, 0), pos, self.DRONE_RADIUS, 2
-            )
+                self.screen, (0, 0, 0), pos, self.DRONE_RADIUS, 2)
             tag = self.font_small.render(f"D{did}", True, (0, 0, 0))
             self.screen.blit(
                 tag,
@@ -392,10 +345,6 @@ class PygameVisualizer:
                     pos[1] - self.DRONE_RADIUS - 16,
                 ),
             )
-
-    # ------------------------------------------------------------------
-    # Loop principale con animazione
-    # ------------------------------------------------------------------
 
     def run_replay(
         self,
@@ -417,7 +366,6 @@ class PygameVisualizer:
         self._compute_positions(nodes)
         self._collect_connections(nodes)
 
-        # Stato animazione: posizione corrente (float) di ogni drone
         anim: dict[int, list[float]] = {}
         for did in range(1, 10000):
             snap = turns[0].get(did)
@@ -431,7 +379,6 @@ class PygameVisualizer:
         acc = 0
         paused = False
 
-        # Smoothing: alpha = 1 - exp(-dt / tau), con tau in secondi
         tau = max(turn_delay_ms / 1000.0 / 3.0, 0.05)
 
         try:
@@ -472,17 +419,14 @@ class PygameVisualizer:
                         idx += 1
                         acc = 0
 
-                # Inizializza nuovi droni che compaiono (raro)
                 for did in turns[idx]:
                     if did not in anim:
                         tgt = self._target_positions(turns[idx]).get(did)
                         if tgt is not None:
                             anim[did] = [float(tgt[0]), float(tgt[1])]
 
-                # Calcola target per il turno corrente
                 targets = self._target_positions(turns[idx])
 
-                # Smoothing esponenziale frame-rate independent
                 alpha = 1.0 - math.exp(-dt / 1000.0 / tau)
                 for did, (tx, ty) in targets.items():
                     if did not in anim:
@@ -492,12 +436,13 @@ class PygameVisualizer:
                     cur[0] += (tx - cur[0]) * alpha
                     cur[1] += (ty - cur[1]) * alpha
 
-                # Render
                 self.screen.fill((245, 245, 245))
                 self.draw_network()
 
-                rendered = {did: (p[0], p[1]) for did, p in anim.items()
-                            if did in targets}
+                rendered = {
+                    did: (p[0], p[1]) for did, p in anim.items(
+                    ) if did in targets
+                }
                 self.draw_drones(rendered)
 
                 hud = f"Turn {idx + 1}/{len(turns)}"

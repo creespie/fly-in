@@ -1,6 +1,7 @@
 from map_creator import Node, ZoneType
 import math
 
+
 def faster_path(starting_node: Node):
     if starting_node.name != "start_hub":
         raise ReferenceError("start_hub not provided correctly")
@@ -8,7 +9,7 @@ def faster_path(starting_node: Node):
     visited = set()
     unvisited = {node for node in starting_node.nodes.values()}
     unvisited.remove(starting_node)
-    nodes_map = {node:[math.inf, None, False] for node in starting_node.nodes}
+    nodes_map = {node: [math.inf, None, False] for node in starting_node.nodes}
     nodes_map["start_hub"] = [0, None, False]
     chosen_node = starting_node
     while chosen_node.name != "goal":
@@ -16,7 +17,7 @@ def faster_path(starting_node: Node):
         visited.add(chosen_node)
         if chosen_node in unvisited:
             unvisited.remove(chosen_node)
-        cost_up_to_here = nodes_map[chosen_node.name][0]    
+        cost_up_to_here = nodes_map[chosen_node.name][0]
         for contact in chosen_node.contacts:
             contact_node, max_through = chosen_node.contacts[contact]
             if max_through == 0 or contact_node in visited:
@@ -29,20 +30,27 @@ def faster_path(starting_node: Node):
                 continue
             if contact_node.zone == ZoneType.PRIORITY:
                 nodes_map[contact_node.name][2] = True
-            if (contact_node.zone in (ZoneType.PRIORITY, ZoneType.NORMAL)) and cost_up_to_here + 1 < nodes_map[contact_node.name][0]:
+            if (
+                contact_node.zone in (ZoneType.PRIORITY, ZoneType.NORMAL)
+            ) and cost_up_to_here + 1 < nodes_map[contact_node.name][0]:
                 nodes_map[contact_node.name][0] = cost_up_to_here + 1
                 nodes_map[contact_node.name][1] = chosen_node
-            elif contact_node.zone == ZoneType.RESTRICTED and cost_up_to_here + 2 < nodes_map[contact_node.name][0]:
+            elif (
+                contact_node.zone == ZoneType.RESTRICTED
+                and cost_up_to_here + 2 < nodes_map[contact_node.name][0]
+            ):
                 nodes_map[contact_node.name][0] = cost_up_to_here + 2
                 nodes_map[contact_node.name][1] = chosen_node
         for nodes in unvisited:
             if next_node is None:
-                if nodes_map[nodes.name][0] != math.inf: 
+                if nodes_map[nodes.name][0] != math.inf:
                     next_node = nodes
                 continue
             elif nodes_map[nodes.name][0] < nodes_map[next_node.name][0] or (
-                (nodes_map[nodes.name][0] == nodes_map[next_node.name][0]) and nodes_map[nodes.name][2]):
-             next_node = nodes
+                (nodes_map[nodes.name][0] == nodes_map[next_node.name][0])
+                and nodes_map[nodes.name][2]
+            ):
+                next_node = nodes
 
         if next_node is not None:
             chosen_node = next_node

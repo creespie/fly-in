@@ -31,13 +31,12 @@ def main() -> None:
             print(line)
 
     if args.visual in ("pygame", "both"):
-        # import pigro: pygame non viene caricato se non serve
         from visualizer import parse_output_lines, PygameVisualizer
 
         turns = parse_output_lines(
-            lines, start_hub="start_hub", nb_drones=nb_drones
-        )
-        PygameVisualizer().run_replay(turns, Node.nodes, turn_delay_ms=args.delay)
+            lines, start_hub="start_hub", nb_drones=nb_drones)
+        PygameVisualizer().run_replay(
+            turns, Node.nodes, turn_delay_ms=args.delay)
 
 
 if __name__ == "__main__":
