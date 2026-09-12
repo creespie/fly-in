@@ -421,9 +421,9 @@ class PygameVisualizer:
 
                 for did in turns[idx]:
                     if did not in anim:
-                        tgt = self._target_positions(turns[idx]).get(did)
-                        if tgt is not None:
-                            anim[did] = [float(tgt[0]), float(tgt[1])]
+                        tgt_pos = self._target_positions(turns[idx]).get(did)
+                        if tgt_pos is not None:
+                            anim[did] = [float(tgt_pos[0]), float(tgt_pos[1])]
 
                 targets = self._target_positions(turns[idx])
 
